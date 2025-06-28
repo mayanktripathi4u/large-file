@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api1-create-task  # Deployment for the create task API
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api1-create-task
+  template:
+    metadata:
+      labels:
+        app: api1-create-task
+    spec:
+      containers:
+      - name: api1-create-task # Container for the create task API
+        image: gcr.io/your-project/api1-create-task:latest 
+        ports:
+        - containerPort: 5000
+        env:
+        - name: GCP_PROJECT_ID
+          value: "your-gcp-project-id"
+        - name: GCP_PUBSUB_TOPIC_CREATE
+          value: "topic-create-task"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api1-create-task  # Service for the create task API
+spec:
+  selector:
+    app: api1-create-task
+  ports:
+  - port: 80
+    targetPort: 5000

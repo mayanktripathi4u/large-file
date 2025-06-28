@@ -1,0 +1,49 @@
+# .github/workflows/build-and-push.yml
+name: Build & Push Docker Images
+
+on:
+  push:
+    paths:
+      - 'api*/**'
+      - '.github/workflows/build-and-push.yml'
+
+env:
+  PROJECT_ID: your-gcp-project-id
+  REGION: us-central1
+  REPO_NAME: docker-repo
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+
+    - name: Auth to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID'
+        service_account: 'your-sa@your-project-id.iam.gserviceaccount.com'
+
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+    - name: Build & Push api1
+      run: |
+        docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api1-create-task:latest ./api1_create_task
+        docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api1-create-task:latest
+
+    - name: Build & Push api2
+      run: |
+        docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api2-process-task:latest ./api2_process_task
+        docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api2-process-task:latest
+
+    - name: Build & Push api3
+      run: |
+        docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api3-stream-api:latest ./api3_stream_api
+        docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/api3-stream-api:latest

@@ -1,0 +1,8 @@
+flask
+requests
+pandas
+numpy
+pillow
+google-cloud-storage
+redis 
+google-cloud-pubsub
